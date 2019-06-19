@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/ikonka">
+        <file>image/delete 1.png</file>
+        <file>image/opensuse-logo.png</file>
+        <file>image/update.png</file>
+        <file>image/mess.png</file>
+        <file>image/IOS/icons8-моя-тема-64.png</file>
+        <file>image/IOS/icons8-синхронизировать-64.png</file>
+        <file>image/IOS/icons8-удалить-64.png</file>
+        <file>image/down.png</file>
+    </qresource>
+</RCC>
