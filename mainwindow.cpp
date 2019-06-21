@@ -87,7 +87,38 @@ void MainWindow::Finish_XDisplay()
 }
 void MainWindow::Finish_ProcessUser()
 {
-    ui->textEdit->append(proc_User->readAllStandardOutput());
+
+    ui->twg2->clear();
+
+    QString vihlp=proc_User->readAllStandardOutput();
+     ui->textEdit->append(vihlp);
+        QStringList Stroki=vihlp.split("\n",QString::SkipEmptyParts);
+
+        for (int i=0;i<Stroki.count();++i)
+        {
+         QString Stroka=Stroki.at(i);
+         QStringList ItemStroka=Stroka.split(" ",QString::SkipEmptyParts);
+         QTreeWidgetItem* twg2Stroka = new QTreeWidgetItem(ui->twg2);
+         twg2Stroka->setText(0,ItemStroka.at(0));
+         twg2Stroka->setText(1,ItemStroka.at(2));
+         twg2Stroka->setText(2,ItemStroka.at(3));
+         for (int l=0;l<ItemStroka.count();++l)
+         {
+             if (ItemStroka.at(l)=='/IBName"')
+             {
+                 twg2Stroka->setText(3,ItemStroka.at(l+1));
+             }
+         }
+//         //twg2Stroka->setText(3,ItemStroka.at(4));
+//         QStringList ItemStroka2=Stroka.split("IBName",QString::SkipEmptyParts);
+//         if (ItemStroka2.at(1)=="")
+//         {
+//             ui->statusBar->showMessage("пустая");
+//       //twg2Stroka->setText(3,ItemStroka2.at(1));
+//         }
+        }
+
+
 }
 void MainWindow::Finish_ProcDelUser()
 {
