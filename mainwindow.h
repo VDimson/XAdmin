@@ -16,17 +16,23 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    struct messUser {
+            QString mess;
+            QStringList ListUser;
+            bool flagUser;
+        };
 public slots:
 
 void Finish_XDisplay();
 void Finish_ProcessUser();
 void Finish_ProcDelUser();
 void Err_ProcDelUser();
+void RecievMessUser(struct messUser Soob);
 
 private slots:
 void on_action_refresh_triggered();
 
-
+void StatusReadUserMess();
 
 void on_pushButton_clicked();
 

@@ -1,5 +1,6 @@
 #include "dialog.h"
 #include "ui_dialog.h"
+#include "QMessageBox"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -14,10 +15,45 @@ Dialog::~Dialog()
 }
 void Dialog::SetSpisokUser(QStringList &SpisokUser)
 {
-QString spisok;
-for (int i=0;i<SpisokUser.count();++i)
+    SpisUser=SpisokUser;
+
+for (int j=0;j<SpisUser.count();++j)
 {
- spisok=SpisokUser.at(i)+"; ";
+ spisok=spisok+SpisUser.at(j)+"; ";
 }
 ui->lineEdit->setText(spisok);
+}
+
+void Dialog::on_checkBox_clicked()
+{
+    if (ui->checkBox->isChecked())
+    {    ui->lineEdit->clear();}
+    else
+    {
+    ui->lineEdit->setText(spisok);
+    }
+
+}
+
+void Dialog::on_buttonBox_accepted()
+{
+    if (ui->textEdit->toPlainText().isEmpty())
+    {
+        QMessageBox::critical(0,"Внимание!","Вы не можете отправить пустое сообщение!");
+        return;
+    }
+ struct messUser FullMess;
+ if (ui->checkBox->isChecked())
+ {
+ SpisUser.clear();
+ FullMess.flagUser=true;
+ }
+ else
+ {FullMess.flagUser=false;}
+
+ FullMess.mess=ui->textEdit->toPlainText();
+ FullMess.ListUser=SpisUser;
+emit SendMessUser(FullMess);
+
+
 }

@@ -8,5 +8,10 @@
         <file>image/IOS/icons8-синхронизировать-64.png</file>
         <file>image/IOS/icons8-удалить-64.png</file>
         <file>image/down.png</file>
+        <file>image/envelope.png</file>
+        <file>image/envelope-check.png</file>
+        <file>image/back.png</file>
+        <file>image/attention.png</file>
+        <file>image/envelope cross.png</file>
     </qresource>
 </RCC>

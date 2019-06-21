@@ -51,7 +51,22 @@
       </column>
       <column>
        <property name="text">
-        <string>Продолжительность</string>
+        <string>Активность</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Простой</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Сообщение</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Текст сообщения</string>
        </property>
       </column>
      </widget>
