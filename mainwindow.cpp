@@ -12,6 +12,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->twg->header()->sortIndicatorOrder();
     ui->twg->sortByColumn(0,Qt::AscendingOrder);
     ui->twg->setSortingEnabled(true);
+    //настройка сортировки в таблице2 по столбцам
+    ui->twg2->header()->sortIndicatorOrder();
+    ui->twg2->sortByColumn(0,Qt::AscendingOrder);
+    ui->twg2->setSortingEnabled(true);
+
    // ui->twg->setSelectionMode(QAbstractItemView::currentChanged());
 
 
@@ -19,12 +24,28 @@ MainWindow::MainWindow(QWidget *parent) :
     proc_XDisplay=new QProcess(this);//выделяем память для процесса
     proc_User=new QProcess(this);
     proc_delUser=new QProcess(this);
+
 //ui->action_message->setDisabled(true);
 ui->action_shutdown->setDisabled(true);
+//создадим в памяти таймер и время
+time=new QTime(0,0,0);
+
+timer=new QTimer(this);
+timerTopUser=new QTimer(this);
+//tm=new QElapsedTimer;
+//законнектим таймер со слотом обработки
+    connect(timer,SIGNAL(timeout()),this,SLOT(TimeUpdate()));
+    connect(timerTopUser,SIGNAL(timeout()),this,SLOT(StartUserTop()));
+    timer->start(5000); //запуск таймера с интервалом 1с
+ timerTopUser->start(1000);
+    //time->start();
+    //tm->start();
     connect(proc_XDisplay,SIGNAL(finished(int)),this,SLOT(Finish_XDisplay()));
     connect(proc_User,SIGNAL(finished(int)),this,SLOT(Finish_ProcessUser()));
     connect(proc_delUser,SIGNAL(finished(int)),this,SLOT(Finish_ProcDelUser()));
     connect(proc_delUser,SIGNAL(readyReadStandardError()),this,SLOT(Err_ProcDelUser()));
+  //  connect(proc_delUser,SIGNAL(readyReadStandardOutput()),this,SLOT(Read_TopUser()));
+
 
     GetXDisplay();
 
@@ -34,11 +55,16 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
+void MainWindow::TimeUpdate()
+{
+GetXDisplay();
+ui->statusBar->showMessage("Сработал рефреш!!!",500);
+}
 void MainWindow::GetXDisplay()
 {
 proc_XDisplay->start("ps",QStringList()<<"-ef");
 }
+
 void MainWindow::Finish_XDisplay()
 {
     //ui->twg->clear();
@@ -56,18 +82,43 @@ void MainWindow::Finish_XDisplay()
        {
 //ищем строки в таблице, возможно уже есть данные
              QTreeWidgetItem* items ;
+
              QList<QTreeWidgetItem*> findItems;
              findItems=ui->twg->findItems(ItemStroka.at(0),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
              if (!findItems.isEmpty())
              {
              items=findItems.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
+             //проверим  изменилась ди длительность активности??
+             //ui->statusBar->showMessage(QString::number(time->elapsed()));
+//             ui->label_time->setText("Относительное время простоя: "+QString::number(0.001*time->elapsed())+"сек.");
+
+
+//             if (items->text(5)!=ItemStroka.at(6))
+//             {
+//пользователь активен
+
+//items->setText(6,"Активен!");
+//time->restart();
+//             }
+//             else
+//             {
+//                 if(time->elapsed()>120000)
+//                 {
+//                 items->setText(6,"курит!");
+//                 }
+//             }
+
 //меняем в найденной записи некторые поля
 
              items->setText(1,ItemStroka.at(1));//id XORG
              items->setText(2,ItemStroka.at(2));//id Sesman
              items->setText(3,ItemStroka.at(8));//номер DISPLAY
              items->setText(4,ItemStroka.at(4));//время подключения
-             items->setText(5,ItemStroka.at(6));//длительность подключения
+             items->setText(5,ItemStroka.at(6));//длительность активности
+
+
+
+
              }
              else
              {
@@ -80,8 +131,12 @@ void MainWindow::Finish_XDisplay()
     twgStroka->setText(3,ItemStroka.at(8));//номер DISPLAY
     twgStroka->setText(4,ItemStroka.at(4));//время подключения
     twgStroka->setText(5,ItemStroka.at(6));//длительность подключения
+    twgStroka->setText(6,"???");
              }
         }
+        }
+        if (time->elapsed()>120000){
+            time->restart();
         }
 
 }
@@ -133,6 +188,7 @@ void MainWindow::Finish_ProcDelUser()
         findItems=ui->twg->findItems(p->objectName(),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
         items=findItems.at(0);
         delete items;
+        flaDel=false;
 
 mess="Завершение процессов завершено корректно! exitCode:"+QString::number(proc_delUser->exitCode());
     }
@@ -260,9 +316,65 @@ void MainWindow::on_action_shutdown_triggered()
         if (reply==QMessageBox::Yes)
             {
 ui->centralWidget->setCursor(Qt::WaitCursor);
+flaDel=true;
         proc_delUser->start("killall",QStringList()<<"-w"<<"-u"<<ui->twg->currentItem()->text(0));
         proc_delUser->setObjectName(ui->twg->currentItem()->text(0));
         }
+    }
+}
+void MainWindow::ObrabotkaStarUserTop()
+{
+    if (flaDel)
+    {
+        return;
+    }
+    QProcess *p=(QProcess*)sender();
+    QString vihlp;
+    vihlp=p->readAllStandardOutput();
+    QStringList Stroki=vihlp.split("\n",QString::SkipEmptyParts);
+     QString Stroka=Stroki.at(6);
+     if (Stroka.isEmpty())
+     {
+         return;
+     }
+     QStringList ItemStroka=Stroka.split(" ",QString::SkipEmptyParts);
+     QTreeWidgetItem* items1 ;
+     QList<QTreeWidgetItem*> findItems1;
+     findItems1=ui->twg->findItems(p->objectName(),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+     items1=findItems1.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
+     if (p->exitCode()==0)
+     {
+     //items1->setIcon(6,QIcon(":/ikonka/image/envelope-check.png"));
+
+     items1->setText(6,ItemStroka.at(8));
+     }
+     else
+     {
+         //items1->setIcon(7,QIcon(":/ikonka/image/envelope cross.png"));
+         items1->setText(7,"err!");
+     }
+   //  ui->statusBar->showMessage(ItemStroka.at(8));
+}
+void MainWindow::StartUserTop()
+{
+    QProcess *procc_top[ui->twg->topLevelItemCount()];
+    for (int i = 0; i < ui->twg->topLevelItemCount(); i++)
+    {
+        QTreeWidgetItem * itemss = ui->twg->topLevelItem(i);
+
+        procc_top[i]=new QProcess(this);
+        procc_top[i]->setObjectName(itemss->text(0));
+        connect(procc_top[i],SIGNAL(finished(int)),this,SLOT(ObrabotkaStarUserTop()));
+        procc_top[i]->start("sh");
+        procc_top[i]->waitForStarted();
+        QString disp_com="top -b -u "+itemss->text(0)+" -n 1\n";
+
+        const char* disp; //определяем символьную переменную
+        //disp=disp_com.toStdString().allocator_type//перевод строки в символную переменную
+        disp=disp_com.toLocal8Bit().data();
+        procc_top[i]->write(disp);
+        procc_top[i]->waitForBytesWritten();
+        procc_top[i]->closeWriteChannel();
     }
 }
 void MainWindow::RecievMessUser(struct messUser Soob)
@@ -271,7 +383,7 @@ void MainWindow::RecievMessUser(struct messUser Soob)
     ui->textEdit->append("Текст сообщения: \n"+Soob.mess);
     if (Soob.flagUser)
     {
-        ui->statusBar->showMessage("Отправляем всем пользователям!");
+        //ui->statusBar->showMessage("Отправляем всем пользователям!");
         QProcess *procc_mess[ui->twg->topLevelItemCount()];
         for (int i = 0; i < ui->twg->topLevelItemCount(); i++)
         {
@@ -310,7 +422,7 @@ void MainWindow::RecievMessUser(struct messUser Soob)
     }
     else
     {
-       ui->statusBar->showMessage("Отправляем выбранным пользователям !");
+      // ui->statusBar->showMessage("Отправляем выбранным пользователям !");
        //количество итерация будет равно количеству выбранных польщователей
        QProcess *procc_mess[Soob.ListUser.count()];
  for (int i=0;i<Soob.ListUser.count();++i)

@@ -5,6 +5,10 @@
 #include <QProcess>
 #include <QTreeWidgetItem>
 #include "dialog.h"
+#include <QTime>
+#include <QTimer>
+#include <QElapsedTimer>
+
 namespace Ui {
 class MainWindow;
 }
@@ -28,9 +32,14 @@ void Finish_ProcessUser();
 void Finish_ProcDelUser();
 void Err_ProcDelUser();
 void RecievMessUser(struct messUser Soob);
+void StartUserTop();
+
+
 
 private slots:
 void on_action_refresh_triggered();
+
+void ObrabotkaStarUserTop();
 
 void StatusReadUserMess();
 
@@ -50,15 +59,21 @@ void on_twg_itemSelectionChanged();
 void on_action_shutdown_triggered();
 
 void on_action_message_triggered();
-
+void TimeUpdate();
 private:
 void GetXDisplay();
     Ui::MainWindow *ui;
     QProcess* proc_XDisplay;
     QString vihlop="";
     QProcess* proc_User;
+
     QProcess* proc_delUser;
     Dialog* mess_form;
+    QTimer *timer;
+    QTimer *timerTopUser;
+    QTime *time;
+    QElapsedTimer *tm;
+     bool flaDel=false;
 
 };
 

@@ -56,7 +56,7 @@
       </column>
       <column>
        <property name="text">
-        <string>Простой</string>
+        <string>CPU%</string>
        </property>
       </column>
       <column>
@@ -143,6 +143,13 @@
         <string>БД 1С</string>
        </property>
       </column>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_time">
+      <property name="text">
+       <string>00:00:00</string>
+      </property>
      </widget>
     </item>
    </layout>
