@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //ui->action_message->setDisabled(true);
 ui->action_shutdown->setDisabled(true);
 //создадим в памяти таймер и время
-time=new QTime(0,0,0);
+
 
 timer=new QTimer(this);
 timerTopUser=new QTimer(this);
@@ -89,24 +89,7 @@ void MainWindow::Finish_XDisplay()
              {
              items=findItems.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
              //проверим  изменилась ди длительность активности??
-             //ui->statusBar->showMessage(QString::number(time->elapsed()));
-//             ui->label_time->setText("Относительное время простоя: "+QString::number(0.001*time->elapsed())+"сек.");
 
-
-//             if (items->text(5)!=ItemStroka.at(6))
-//             {
-//пользователь активен
-
-//items->setText(6,"Активен!");
-//time->restart();
-//             }
-//             else
-//             {
-//                 if(time->elapsed()>120000)
-//                 {
-//                 items->setText(6,"курит!");
-//                 }
-//             }
 
 //меняем в найденной записи некторые поля
 
@@ -135,10 +118,8 @@ void MainWindow::Finish_XDisplay()
              }
         }
         }
-        if (time->elapsed()>120000){
-            time->restart();
-        }
 
+on_twg_itemSelectionChanged();
 }
 void MainWindow::Finish_ProcessUser()
 {
@@ -148,6 +129,10 @@ void MainWindow::Finish_ProcessUser()
     QString vihlp=proc_User->readAllStandardOutput();
      ui->textEdit->append(vihlp);
         QStringList Stroki=vihlp.split("\n",QString::SkipEmptyParts);
+        if (Stroki.isEmpty())
+        {
+            return;
+        }
 
         for (int i=0;i<Stroki.count();++i)
         {
@@ -206,9 +191,7 @@ void MainWindow::Err_ProcDelUser()
 }
 void MainWindow::on_action_refresh_triggered()
 {
-
    GetXDisplay();
-
 }
 
 
@@ -332,6 +315,17 @@ void MainWindow::ObrabotkaStarUserTop()
     QString vihlp;
     vihlp=p->readAllStandardOutput();
     QStringList Stroki=vihlp.split("\n",QString::SkipEmptyParts);
+    if (Stroki.count()<7)
+    {
+
+        QList<QTreeWidgetItem*> findItems2;
+        QTreeWidgetItem *items2;
+        findItems2=ui->twg->findItems(p->objectName(),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+        items2=findItems2.at(0);
+        delete items2;
+          return;
+
+    }
      QString Stroka=Stroki.at(6);
      if (Stroka.isEmpty())
      {
@@ -416,6 +410,7 @@ void MainWindow::RecievMessUser(struct messUser Soob)
             itemss->setIcon(7,QIcon(":/ikonka/image/envelope.png"));
             itemss->setText(7,"отправ");
             itemss->setText(8,Soob.mess);
+            itemss->setCheckState(0,Qt::Unchecked);
             //ui->statusBar->showMessage(items->text(3));//получаем значеине вQString е из четвертого столбца , номер дисплея XOR
                 }
 
@@ -464,6 +459,7 @@ items1=findItems1.at(0);//забираем из списка первый, ло�
 items1->setIcon(7,QIcon(":/ikonka/image/envelope.png"));
 items1->setText(7,"отправ");
 items1->setText(8,Soob.mess);
+items1->setCheckState(0,Qt::Unchecked);
 //ui->statusBar->showMessage(items->text(3));//получаем значеине вQString е из четвертого столбца , номер дисплея XOR
     }
 }
@@ -516,3 +512,5 @@ return;
     mess_form->SetSpisokUser(ListUserMess);
     mess_form->show();//показываем форму!
 }
+
+

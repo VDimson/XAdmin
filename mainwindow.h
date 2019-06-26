@@ -60,6 +60,8 @@ void on_action_shutdown_triggered();
 
 void on_action_message_triggered();
 void TimeUpdate();
+
+
 private:
 void GetXDisplay();
     Ui::MainWindow *ui;
@@ -71,7 +73,7 @@ void GetXDisplay();
     Dialog* mess_form;
     QTimer *timer;
     QTimer *timerTopUser;
-    QTime *time;
+
     QElapsedTimer *tm;
      bool flaDel=false;
 
