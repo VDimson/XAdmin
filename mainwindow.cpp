@@ -80,11 +80,35 @@ void MainWindow::Finish_XDisplay()
          QStringList ItemStroka=Stroka.split(" ",QString::SkipEmptyParts);
          if (ItemStroka.at(7)=="Xorg")
        {
+
+//вытащим точные данные о логине, т.к. в выхлопе этого процесса логин укорочен, напрмер glavbuhcvm сокращен и представлен как glavbuh+
+//вдальнейшем нужен полный точный логин , возмеме его командой cat /etc/passwd | grep user-первых 7 символов.
+QString login;
+login=ItemStroka.at(0);
+QString login7=login.left(7);
+//запустим процесс
+proc_passwd =new QProcess(this);
+proc_passwd->start("sh");
+proc_passwd->waitForStarted();
+QString paramStr="cat /etc/passwd | grep "+login7+"\n";
+const char* param; //определяем символьную переменную
+//disp=disp_com.toStdString().allocator_type//перевод строки в символную переменную
+param=paramStr.toLocal8Bit().data();
+proc_passwd->write(param);
+proc_passwd->waitForBytesWritten();
+proc_passwd->closeWriteChannel();
+proc_passwd->waitForReadyRead();
+QString vihlopPasswd=proc_passwd->readAllStandardOutput();
+QStringList StrokaPasswd=vihlopPasswd.split(":",QString::SkipEmptyParts);
+QString fullLogin=StrokaPasswd.at(0);
+proc_passwd->close();
+
+
 //ищем строки в таблице, возможно уже есть данные
              QTreeWidgetItem* items ;
 
              QList<QTreeWidgetItem*> findItems;
-             findItems=ui->twg->findItems(ItemStroka.at(0),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+             findItems=ui->twg->findItems(fullLogin,Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
              if (!findItems.isEmpty())
              {
              items=findItems.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
@@ -108,7 +132,7 @@ void MainWindow::Finish_XDisplay()
     QTreeWidgetItem* twgStroka = new QTreeWidgetItem(ui->twg);//добавим строку в таблицу пользователей !
     twgStroka->setCheckState(0,Qt::Unchecked);
     //twgStroka->setIcon(7,QIcon(":/ikonka/image/mess.png"));
-    twgStroka->setText(0,ItemStroka.at(0));//пользователь
+    twgStroka->setText(0,fullLogin);//пользователь
     twgStroka->setText(1,ItemStroka.at(1));//id XORG
     twgStroka->setText(2,ItemStroka.at(2));//id Sesman
     twgStroka->setText(3,ItemStroka.at(8));//номер DISPLAY

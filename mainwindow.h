@@ -68,7 +68,7 @@ void GetXDisplay();
     QProcess* proc_XDisplay;
     QString vihlop="";
     QProcess* proc_User;
-
+    QProcess* proc_passwd;
     QProcess* proc_delUser;
     Dialog* mess_form;
     QTimer *timer;
