@@ -36,8 +36,8 @@ timerTopUser=new QTimer(this);
 //законнектим таймер со слотом обработки
     connect(timer,SIGNAL(timeout()),this,SLOT(TimeUpdate()));
     connect(timerTopUser,SIGNAL(timeout()),this,SLOT(StartUserTop()));
-    timer->start(5000); //запуск таймера с интервалом 1с
- timerTopUser->start(1000);
+timer->start(5000); //запуск таймера с интервалом 1с
+timerTopUser->start(1000);
     //time->start();
     //tm->start();
     connect(proc_XDisplay,SIGNAL(finished(int)),this,SLOT(Finish_XDisplay()));
@@ -84,6 +84,7 @@ void MainWindow::Finish_XDisplay()
 //вытащим точные данные о логине, т.к. в выхлопе этого процесса логин укорочен, напрмер glavbuhcvm сокращен и представлен как glavbuh+
 //вдальнейшем нужен полный точный логин , возмеме его командой cat /etc/passwd | grep user-первых 7 символов.
 QString login;
+QString fullLogin;
 login=ItemStroka.at(0);
 QString login7=login.left(7);
 //запустим процесс
@@ -99,9 +100,58 @@ proc_passwd->waitForBytesWritten();
 proc_passwd->closeWriteChannel();
 proc_passwd->waitForReadyRead();
 QString vihlopPasswd=proc_passwd->readAllStandardOutput();
-QStringList StrokaPasswd=vihlopPasswd.split(":",QString::SkipEmptyParts);
-QString fullLogin=StrokaPasswd.at(0);
 proc_passwd->close();
+//получили список логинов, начинающих первых 7 букв
+QStringList Stroki2=vihlopPasswd.split("\n",QString::SkipEmptyParts);
+for (int j=0;j<Stroki2.count();++j)
+
+{
+//запросим перебором по всем  найденным логинам , есть ли у нх вообще процессы Xorg
+
+    QString StrokaPasswd=Stroki2.at(j);
+
+
+QStringList ItemStrokaPasswd=StrokaPasswd.split(":",QString::SkipEmptyParts);
+
+QString fLogin=ItemStrokaPasswd.at(0);
+
+////   сделаем запрос
+    proc_passwd2 =new QProcess(this);
+    proc_passwd2->start("sh");
+    proc_passwd2->waitForStarted();
+    QString paramStr2="ps -fU "+fLogin+" | grep Xorg\n";
+    const char* param2; //определяем символьную переменную
+    //перевод строки в символную переменную
+    param2=paramStr2.toLocal8Bit().data();
+    proc_passwd2->write(param2);
+    proc_passwd2->waitForBytesWritten();
+    proc_passwd2->closeWriteChannel();
+    proc_passwd2->waitForReadyRead();
+    QString vihlopPasswd2=proc_passwd2->readAllStandardOutput();
+    proc_passwd2->close();
+    if (proc_passwd2->exitCode()==1)
+    {
+continue;
+    }
+    QString kod=QString::number(proc_passwd2->exitCode());
+
+
+    if (vihlopPasswd2.isEmpty())
+   {
+       continue;
+    }
+QStringList StrokavihlopPasswd2=vihlopPasswd2.split(" ",QString::SkipEmptyParts);
+//t=t+fLogin+" code:"+kod+" displ:"+StrokavihlopPasswd2.at(8)+"\n";
+if (ItemStroka.at(8)==StrokavihlopPasswd2.at(8))
+    {
+       //t=t+fLogin+" code:"+kod+" displ:"+StrokavihlopPasswd2.at(8)+"\n";
+    fullLogin=fLogin;
+
+    }
+
+}
+
+ui->textEdit->setText(t);
 
 
 //ищем строки в таблице, возможно уже есть данные

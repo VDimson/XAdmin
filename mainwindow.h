@@ -69,6 +69,7 @@ void GetXDisplay();
     QString vihlop="";
     QProcess* proc_User;
     QProcess* proc_passwd;
+    QProcess* proc_passwd2;
     QProcess* proc_delUser;
     Dialog* mess_form;
     QTimer *timer;
@@ -76,6 +77,8 @@ void GetXDisplay();
 
     QElapsedTimer *tm;
      bool flaDel=false;
+     //хлам для тестов
+     QString t="";
 
 };
 
