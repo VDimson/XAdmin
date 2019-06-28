@@ -13,5 +13,6 @@
         <file>image/back.png</file>
         <file>image/attention.png</file>
         <file>image/envelope cross.png</file>
+        <file>image/user.png</file>
     </qresource>
 </RCC>

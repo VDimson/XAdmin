@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>946</width>
-    <height>598</height>
+    <width>1200</width>
+    <height>1500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -61,7 +61,7 @@
       </column>
       <column>
        <property name="text">
-        <string>Сообщение</string>
+        <string>Статус сообщения</string>
        </property>
       </column>
       <column>
@@ -152,7 +152,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>946</width>
+     <width>1200</width>
      <height>29</height>
     </rect>
    </property>

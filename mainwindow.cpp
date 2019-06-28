@@ -19,7 +19,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
    // ui->twg->setSelectionMode(QAbstractItemView::currentChanged());
 
-
+//создадим контекстное меню по правой кнопке в первой таблице
+    menuTwg=new QMenu(ui->twg);
+    QList<QAction*> act;
+    act.append(ui->action_message);
+    act.append(ui->action_shutdown);
+    menuTwg->addActions(act);
+//--------------------------------------------------
+//настройка в таблице
+ui->twg->setContextMenuPolicy(Qt::CustomContextMenu);
+connect(ui->twg,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(MenuTwgShow()));
     ui->checkBox_proc->setChecked(true);
     proc_XDisplay=new QProcess(this);//выделяем память для процесса
     proc_User=new QProcess(this);
@@ -28,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent) :
 //ui->action_message->setDisabled(true);
 ui->action_shutdown->setDisabled(true);
 //создадим в памяти таймер и время
-
 
 timer=new QTimer(this);
 timerTopUser=new QTimer(this);
@@ -46,7 +54,8 @@ timerTopUser->start(1000);
     connect(proc_delUser,SIGNAL(readyReadStandardError()),this,SLOT(Err_ProcDelUser()));
   //  connect(proc_delUser,SIGNAL(readyReadStandardOutput()),this,SLOT(Read_TopUser()));
 
-
+//    this->setTrayIconActions();
+//    this->showTrayIcon();
     GetXDisplay();
 
 }
@@ -55,18 +64,34 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+void MainWindow::MenuTwgShow()
+{
+    menuTwg->exec(QCursor::pos());
+}
 void MainWindow::TimeUpdate()
 {
+    if (flaDel)
+    {
+        return;
+    }
 GetXDisplay();
 ui->statusBar->showMessage("Сработал рефреш!!!",500);
 }
 void MainWindow::GetXDisplay()
 {
+    if (flaDel)
+    {
+        return;
+    }
 proc_XDisplay->start("ps",QStringList()<<"-ef");
 }
 
 void MainWindow::Finish_XDisplay()
 {
+    if (flaDel)
+    {
+        return;
+    }
     //ui->twg->clear();
 
     //ui->action_message->setDisabled(true);
@@ -151,14 +176,14 @@ if (ItemStroka.at(8)==StrokavihlopPasswd2.at(8))
 
 }
 
-ui->textEdit->setText(t);
+//ui->textEdit->setText(t);
 
 
 //ищем строки в таблице, возможно уже есть данные
              QTreeWidgetItem* items ;
 
              QList<QTreeWidgetItem*> findItems;
-             findItems=ui->twg->findItems(fullLogin,Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+             findItems=ui->twg->findItems(fullLogin,Qt::MatchWildcard |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
              if (!findItems.isEmpty())
              {
              items=findItems.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
@@ -220,7 +245,7 @@ void MainWindow::Finish_ProcessUser()
          {
              if (ItemStroka.at(l)=='/IBName"')
              {
-                 twg2Stroka->setText(3,ItemStroka.at(l+1));
+                 twg2Stroka->setText(3,ItemStroka.at(l));
              }
          }
 //         //twg2Stroka->setText(3,ItemStroka.at(4));
@@ -244,7 +269,7 @@ void MainWindow::Finish_ProcDelUser()
         QProcess *p=(QProcess*)sender();
         QTreeWidgetItem* items ;
         QList<QTreeWidgetItem*> findItems;
-        findItems=ui->twg->findItems(p->objectName(),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+        findItems=ui->twg->findItems(p->objectName(),Qt::MatchWildcard|Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
         items=findItems.at(0);
         delete items;
         flaDel=false;
@@ -394,7 +419,7 @@ void MainWindow::ObrabotkaStarUserTop()
 
         QList<QTreeWidgetItem*> findItems2;
         QTreeWidgetItem *items2;
-        findItems2=ui->twg->findItems(p->objectName(),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+        findItems2=ui->twg->findItems(p->objectName(),Qt::MatchWildcard |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
         items2=findItems2.at(0);
         delete items2;
           return;
@@ -408,7 +433,7 @@ void MainWindow::ObrabotkaStarUserTop()
      QStringList ItemStroka=Stroka.split(" ",QString::SkipEmptyParts);
      QTreeWidgetItem* items1 ;
      QList<QTreeWidgetItem*> findItems1;
-     findItems1=ui->twg->findItems(p->objectName(),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+     findItems1=ui->twg->findItems(p->objectName(),Qt::MatchWildcard |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
      items1=findItems1.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
      if (p->exitCode()==0)
      {
@@ -425,6 +450,10 @@ void MainWindow::ObrabotkaStarUserTop()
 }
 void MainWindow::StartUserTop()
 {
+    if (flaDel)
+    {
+        return;
+    }
     QProcess *procc_top[ui->twg->topLevelItemCount()];
     for (int i = 0; i < ui->twg->topLevelItemCount(); i++)
     {
@@ -500,7 +529,7 @@ void MainWindow::RecievMessUser(struct messUser Soob)
 //выполним поиск номера дисплея в таблице twg по пользователю из полученной структуры
 QTreeWidgetItem* items ;
 QList<QTreeWidgetItem*> findItems;
-findItems=ui->twg->findItems(Soob.ListUser.at(i),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+findItems=ui->twg->findItems(Soob.ListUser.at(i),Qt::MatchWildcard |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
 items=findItems.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
 //ui->statusBar->showMessage(items->text(3));//получаем значеине вQString е из четвертого столбца , номер дисплея XORG
 //заполняем массив с процессами !
@@ -528,7 +557,7 @@ procc_mess[i]->closeWriteChannel();
 //поставим знак в таблице о том, что отправлено сообщение!
 QTreeWidgetItem* items1 ;
 QList<QTreeWidgetItem*> findItems1;
-findItems1=ui->twg->findItems(Soob.ListUser.at(i),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+findItems1=ui->twg->findItems(Soob.ListUser.at(i),Qt::MatchWildcard |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
 items1=findItems1.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
 items1->setIcon(7,QIcon(":/ikonka/image/envelope.png"));
 items1->setText(7,"отправ");
@@ -548,7 +577,7 @@ ui->textEdit->append(p->objectName());
 ui->textEdit->append("ExitCode: "+QString::number(p->exitCode()));
 QTreeWidgetItem* items1 ;
 QList<QTreeWidgetItem*> findItems1;
-findItems1=ui->twg->findItems(p->objectName(),Qt::MatchContains |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
+findItems1=ui->twg->findItems(p->objectName(),Qt::MatchWildcard |Qt::MatchRecursive,0);//получаем список искомых так НАДО ! хотя должен быть всегда один штука
 items1=findItems1.at(0);//забираем из списка первый, логины не могут повторяться, поэто список будет всегда с одним элементом!
 if (p->exitCode()==0)
 {
@@ -587,4 +616,51 @@ return;
     mess_form->show();//показываем форму!
 }
 
+//для трея
+//void MainWindow::showTrayIcon()
+//{
+//    // Создаём экземпляр класса и задаём его свойства...
 
+
+//        trayIcon =new QSystemTrayIcon(this);
+//        QIcon trayImage(":/ikonka/image/user.png");
+//        trayIcon->setIcon(trayImage);
+//        trayIcon->setContextMenu(trayIconMenu);
+
+//        // Подключаем обработчик клика по иконке...
+//        connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+
+//        // Выводим значок...
+//        trayIcon->show();
+//}
+//void MainWindow::setTrayIconActions()
+//{
+//    // Setting actions...
+//        minimizeAction = new QAction("Свернуть", this);
+//        restoreAction = new QAction("Восстановить", this);
+//        quitAction = new QAction("Выход", this);
+
+//        // Connecting actions to slots...
+//        connect (minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
+//        connect (restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
+//        connect (quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+//        // Setting system tray's icon menu...
+//        trayIconMenu = new QMenu(this);
+//        trayIconMenu -> addAction (minimizeAction);
+//        trayIconMenu -> addAction (restoreAction);
+//        trayIconMenu -> addAction (quitAction);
+
+//}
+
+//void MainWindow::changeEvent(QEvent *event)
+//{
+//    QMainWindow::changeEvent(event);
+//    if (event -> type() == QEvent::WindowStateChange)
+//    {
+//        if (isMinimized())
+//        {
+//            this -> hide();
+//        }
+//    }
+//}
