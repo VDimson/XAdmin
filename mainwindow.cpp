@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     act.append(ui->action_message);
     act.append(ui->action_shutdown);
     menuTwg->addActions(act);
+
 //--------------------------------------------------
 //настройка в таблице
 ui->twg->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -53,9 +54,9 @@ timerTopUser->start(1000);
     connect(proc_delUser,SIGNAL(finished(int)),this,SLOT(Finish_ProcDelUser()));
     connect(proc_delUser,SIGNAL(readyReadStandardError()),this,SLOT(Err_ProcDelUser()));
   //  connect(proc_delUser,SIGNAL(readyReadStandardOutput()),this,SLOT(Read_TopUser()));
-
-//    this->setTrayIconActions();
-//    this->showTrayIcon();
+//для трея
+    this->setTrayIconActions();
+    this->showTrayIcon();
     GetXDisplay();
 
 }
@@ -299,6 +300,8 @@ void MainWindow::on_pushButton_clicked()
     QMessageBox::StandardButton reply = QMessageBox::question(this,"Внимание","Хотите закрыть программу?",QMessageBox::Yes | QMessageBox::No);
     if (reply==QMessageBox::Yes)
         {QApplication::quit();}
+    if (reply==QMessageBox::No)
+    { this->hide();}
 }
 void MainWindow::Start_ProcUser(QString item)
 {
@@ -617,50 +620,80 @@ return;
 }
 
 //для трея
-//void MainWindow::showTrayIcon()
-//{
-//    // Создаём экземпляр класса и задаём его свойства...
+void MainWindow::showTrayIcon()
+{
+    // Создаём экземпляр класса и задаём его свойства...
 
 
-//        trayIcon =new QSystemTrayIcon(this);
-//        QIcon trayImage(":/ikonka/image/user.png");
-//        trayIcon->setIcon(trayImage);
-//        trayIcon->setContextMenu(trayIconMenu);
+        trayIcon =new QSystemTrayIcon(this);
+        QIcon trayImage(":/ikonka/image/user.png");
+        trayIcon->setIcon(trayImage);
+        trayIcon->setContextMenu(trayIconMenu);
 
-//        // Подключаем обработчик клика по иконке...
-//        connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+        // Подключаем обработчик клика по иконке...
+        connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
 
-//        // Выводим значок...
-//        trayIcon->show();
-//}
-//void MainWindow::setTrayIconActions()
-//{
-//    // Setting actions...
-//        minimizeAction = new QAction("Свернуть", this);
-//        restoreAction = new QAction("Восстановить", this);
-//        quitAction = new QAction("Выход", this);
+        // Выводим значок...
+        trayIcon->show();
+}
+void MainWindow::setTrayIconActions()
+{
+    // Setting actions...
+        minimizeAction = new QAction("Свернуть", this);
+        restoreAction = new QAction("Восстановить", this);
+        quitAction = new QAction("Выход", this);
 
-//        // Connecting actions to slots...
-//        connect (minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
-//        connect (restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
-//        connect (quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+        // Connecting actions to slots...
+        connect (minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
+        connect (restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
+        //connect (quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+        connect (quitAction, SIGNAL(triggered()),this,SLOT(trayIconExit()));
+        // Setting system tray's icon menu...
+        trayIconMenu = new QMenu(this);
+        trayIconMenu -> addAction (minimizeAction);
+        trayIconMenu -> addAction (restoreAction);
+        trayIconMenu -> addAction (quitAction);
 
-//        // Setting system tray's icon menu...
-//        trayIconMenu = new QMenu(this);
-//        trayIconMenu -> addAction (minimizeAction);
-//        trayIconMenu -> addAction (restoreAction);
-//        trayIconMenu -> addAction (quitAction);
+}
 
-//}
+void MainWindow::changeEvent(QEvent *event)
+{
+   QMainWindow::changeEvent(event);
 
-//void MainWindow::changeEvent(QEvent *event)
-//{
-//    QMainWindow::changeEvent(event);
-//    if (event -> type() == QEvent::WindowStateChange)
-//    {
-//        if (isMinimized())
-//        {
-//            this -> hide();
-//        }
-//    }
-//}
+    if (event -> type() == QEvent::WindowStateChange)
+    {
+        if (isMinimized())
+        {
+         this -> hide();
+
+        }
+    }
+}
+void MainWindow::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+        case QSystemTrayIcon::Trigger:
+        case QSystemTrayIcon::DoubleClick:
+            this->trayActionExecute();
+            break;
+        default:
+            break;
+    }
+}
+void MainWindow::trayActionExecute()
+{
+    //QMessageBox::information(this, "TrayIcon", "This is a test message. Replace this by your code!");
+    this->showMaximized();
+}
+void MainWindow::trayIconExit()
+{
+    QMessageBox::StandardButton reply = QMessageBox::question(this,"Внимание","Хотите закрыть программу?",QMessageBox::Yes | QMessageBox::No);
+    if (reply==QMessageBox::Yes)
+        {QApplication::quit();}
+    else
+    {
+        this->show();
+    }
+
+}

@@ -62,12 +62,14 @@ void on_action_shutdown_triggered();
 void on_action_message_triggered();
 void TimeUpdate();
 void MenuTwgShow();
+
 //для трея
-//void changeEvent(QEvent*);
-//    void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
-//    void trayActionExecute();
-//    void setTrayIconActions();
-//    void showTrayIcon();
+    void changeEvent(QEvent*);
+    void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void trayActionExecute();
+    void setTrayIconActions();
+    void showTrayIcon();
+    void trayIconExit();
 private:
 void GetXDisplay();
     Ui::MainWindow *ui;
@@ -88,11 +90,11 @@ void GetXDisplay();
      //хлам для тестов
      QString t="";
      //для трея
-//     QMenu *trayIconMenu;
-//         QAction *minimizeAction;
-//         QAction *restoreAction;
-//         QAction *quitAction;
-//         QSystemTrayIcon *trayIcon;
+         QMenu *trayIconMenu;
+         QAction *minimizeAction;
+         QAction *restoreAction;
+         QAction *quitAction;
+         QSystemTrayIcon *trayIcon;
 
 };
 
