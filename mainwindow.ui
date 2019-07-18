@@ -162,6 +162,7 @@
     </property>
     <addaction name="action_refresh"/>
     <addaction name="action_message"/>
+    <addaction name="action_connect"/>
     <addaction name="action_shutdown"/>
    </widget>
    <addaction name="menu"/>
@@ -209,6 +210,18 @@
    </property>
    <property name="text">
     <string>отключить</string>
+   </property>
+  </action>
+  <action name="action_connect">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/ikonka/image/display.png</normaloff>:/ikonka/image/display.png</iconset>
+   </property>
+   <property name="text">
+    <string>подключиться</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Z</string>
    </property>
   </action>
  </widget>

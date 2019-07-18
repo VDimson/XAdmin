@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QList<QAction*> act;
     act.append(ui->action_message);
     act.append(ui->action_shutdown);
+    act.append(ui->action_connect);
     menuTwg->addActions(act);
 
 //--------------------------------------------------
@@ -34,6 +35,7 @@ connect(ui->twg,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(MenuTwgShow
     proc_XDisplay=new QProcess(this);//выделяем память для процесса
     proc_User=new QProcess(this);
     proc_delUser=new QProcess(this);
+    proc_connect=new QProcess(this);
 
 //ui->action_message->setDisabled(true);
 ui->action_shutdown->setDisabled(true);
@@ -53,6 +55,8 @@ timerTopUser->start(1000);
     connect(proc_User,SIGNAL(finished(int)),this,SLOT(Finish_ProcessUser()));
     connect(proc_delUser,SIGNAL(finished(int)),this,SLOT(Finish_ProcDelUser()));
     connect(proc_delUser,SIGNAL(readyReadStandardError()),this,SLOT(Err_ProcDelUser()));
+    connect(proc_connect,SIGNAL(finished(int)),this,SLOT(Connect()));
+
   //  connect(proc_delUser,SIGNAL(readyReadStandardOutput()),this,SLOT(Read_TopUser()));
 //для трея
     this->setTrayIconActions();
@@ -86,7 +90,16 @@ void MainWindow::GetXDisplay()
     }
 proc_XDisplay->start("ps",QStringList()<<"-ef");
 }
-
+void MainWindow::Connect()
+{
+    if (proc_connect->exitCode()!=0)
+    {
+        QString mess;
+        mess="Ошибка выполнения процесса remmina , ExitCode="+QString::number(proc_connect->exitCode());
+    QMessageBox::critical(0,"Внимание!",mess);
+    }
+proc_connect->close();
+}
 void MainWindow::Finish_XDisplay()
 {
     if (flaDel)
@@ -175,6 +188,10 @@ if (ItemStroka.at(8)==StrokavihlopPasswd2.at(8))
 
     }
 
+}
+if (fullLogin.isEmpty())
+{
+    continue;
 }
 
 //ui->textEdit->setText(t);
@@ -696,4 +713,83 @@ void MainWindow::trayIconExit()
         this->show();
     }
 
+}
+
+void MainWindow::on_action_connect_triggered()
+{
+    bool flagIskom=false;
+    ui->statusBar->showMessage("запускаем remmina!",1000);
+    if (!ui->twg->currentItem())
+    {
+        ui->statusBar->showMessage("Не выбрана строка с пользователем!");
+        return;
+    }
+    QString iskom;
+    iskom="username="+ui->twg->currentItem()->text(0);
+    QProcess proc_ls;
+    proc_ls.start("ls",QStringList()<<"/root/.local/share/remmina");
+    proc_ls.waitForFinished();
+    if (proc_ls.exitCode()!=0)
+    {
+        QMessageBox::critical(this, "Внимание", "Ошибка в выполнении процесса ls !");
+        return;
+    }
+    QString vihl;
+    vihl=proc_ls.readAllStandardOutput();
+    if (vihl.isEmpty())
+    {
+
+        QMessageBox::StandardButton reply = QMessageBox::question(this,"Внимание","Нет файлов подключения, хотите создать?",QMessageBox::Yes | QMessageBox::No);
+        if (reply==QMessageBox::Yes)
+            {proc_connect->startDetached("remmina",QStringList()<<"-n");
+        return;}
+        else
+        {
+           return;
+        }
+
+    }
+   // ui->textEdit->append(proc_ls.readAllStandardOutput());
+    proc_ls.close();
+    QStringList SpisFiles=vihl.split("\n",QString::SkipEmptyParts);
+    for (int i=0;i<SpisFiles.count();++i)
+    {
+    QProcess proc_cat;
+    QString pathFiles;
+    pathFiles="/root/.local/share/remmina/"+SpisFiles.at(i);
+    proc_cat.start("cat",QStringList()<<pathFiles);
+   proc_cat.waitForFinished();
+    ui->statusBar->showMessage(QString::number(proc_cat.exitCode()));
+    if (proc_cat.exitCode()!=0)
+    {
+        QMessageBox::critical(this, "Внимание", "Ошибка в выполнении процесса cat !");
+        continue;
+    }
+    QString vihlParam;
+    vihlParam=proc_cat.readAllStandardOutput();
+//    ui->textEdit->append(vihlParam);
+//    ui->textEdit->append("_________________");
+    proc_cat.close();
+    QStringList SpisParam=vihlParam.split("\n",QString::SkipEmptyParts);
+for (int m=0;m<SpisParam.count();++m)
+{
+
+if (SpisParam.at(m)==iskom)
+{
+ui->statusBar->showMessage(SpisFiles.at(i));
+flagIskom=true;
+proc_connect->start("remmina",QStringList()<<"-c"<<pathFiles);
+
+}
+}
+
+
+}
+    if (!flagIskom)
+    {
+
+        ui->statusBar->showMessage("нет файла подключения!");
+        proc_connect->startDetached("remmina",QStringList()<<"-n");
+       //proc_connect->close();
+    }
 }

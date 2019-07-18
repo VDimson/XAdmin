@@ -34,7 +34,7 @@ void Finish_ProcDelUser();
 void Err_ProcDelUser();
 void RecievMessUser(struct messUser Soob);
 void StartUserTop();
-
+void Connect();
 
 
 private slots:
@@ -70,6 +70,8 @@ void MenuTwgShow();
     void setTrayIconActions();
     void showTrayIcon();
     void trayIconExit();
+    void on_action_connect_triggered();
+
 private:
 void GetXDisplay();
     Ui::MainWindow *ui;
@@ -79,6 +81,7 @@ void GetXDisplay();
     QProcess* proc_passwd;
     QProcess* proc_passwd2;
     QProcess* proc_delUser;
+    QProcess* proc_connect;
     Dialog* mess_form;
     QTimer *timer;
     QTimer *timerTopUser;
