@@ -35,7 +35,7 @@ connect(ui->twg,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(MenuTwgShow
     proc_XDisplay=new QProcess(this);//выделяем память для процесса
     proc_User=new QProcess(this);
     proc_delUser=new QProcess(this);
-    proc_connect=new QProcess(this);
+
 
 //ui->action_message->setDisabled(true);
 ui->action_shutdown->setDisabled(true);
@@ -55,7 +55,7 @@ timerTopUser->start(1000);
     connect(proc_User,SIGNAL(finished(int)),this,SLOT(Finish_ProcessUser()));
     connect(proc_delUser,SIGNAL(finished(int)),this,SLOT(Finish_ProcDelUser()));
     connect(proc_delUser,SIGNAL(readyReadStandardError()),this,SLOT(Err_ProcDelUser()));
-    connect(proc_connect,SIGNAL(finished(int)),this,SLOT(Connect()));
+
 
   //  connect(proc_delUser,SIGNAL(readyReadStandardOutput()),this,SLOT(Read_TopUser()));
 //для трея
@@ -90,16 +90,7 @@ void MainWindow::GetXDisplay()
     }
 proc_XDisplay->start("ps",QStringList()<<"-ef");
 }
-void MainWindow::Connect()
-{
-    if (proc_connect->exitCode()!=0)
-    {
-        QString mess;
-        mess="Ошибка выполнения процесса remmina , ExitCode="+QString::number(proc_connect->exitCode());
-    QMessageBox::critical(0,"Внимание!",mess);
-    }
-proc_connect->close();
-}
+
 void MainWindow::Finish_XDisplay()
 {
     if (flaDel)
@@ -778,7 +769,9 @@ if (SpisParam.at(m)==iskom)
 {
 ui->statusBar->showMessage(SpisFiles.at(i));
 flagIskom=true;
-proc_connect->start("remmina",QStringList()<<"-c"<<pathFiles);
+//ui->textEdit->append(QString::number(proc_connect->exitStatus()));
+
+proc_connect->startDetached("remmina",QStringList()<<"-c"<<pathFiles);
 
 }
 }

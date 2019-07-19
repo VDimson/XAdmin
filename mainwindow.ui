@@ -177,6 +177,7 @@
    <addaction name="action_refresh"/>
    <addaction name="action_message"/>
    <addaction name="action_shutdown"/>
+   <addaction name="action_connect"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_refresh">

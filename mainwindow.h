@@ -34,7 +34,7 @@ void Finish_ProcDelUser();
 void Err_ProcDelUser();
 void RecievMessUser(struct messUser Soob);
 void StartUserTop();
-void Connect();
+
 
 
 private slots:
